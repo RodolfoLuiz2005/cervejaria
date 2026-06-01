@@ -1,0 +1,85 @@
+﻿.kanban {
+    margin-top: 1.5rem;
+    display: grid;
+    gap: 1rem
+}
+
+.column {
+    border: 1px solid rgba(74, 83, 96, .65);
+    background: rgba(52, 61, 74, .4);
+    border-radius: 1rem;
+    padding: .75rem
+}
+
+.column-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .75rem
+}
+
+.column-title {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    font-family: 'Archivo Black';
+    font-size: .875rem;
+    text-transform: uppercase;
+    letter-spacing: .08em
+}
+
+.count {
+    background: var(--background);
+    color: var(--gold);
+    font-family: 'Archivo Black';
+    border-radius: 999px;
+    padding: .125rem .5rem;
+    font-size: .75rem
+}
+
+.empty {
+    border: 1px dashed rgba(74, 83, 96, .5);
+    border-radius: .5rem;
+    padding: 1.5rem .75rem;
+    text-align: center;
+    color: var(--muted-foreground);
+    font-size: .75rem
+}
+
+.order-card {
+    border-radius: .75rem;
+    padding: .75rem
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    border-radius: 999px;
+    padding: .125rem .5rem;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .06em
+}
+
+.tag-delivery {
+    background: rgba(217, 130, 54, .15);
+    color: var(--ember)
+}
+
+.tag-mesa {
+    background: rgba(2, 115, 51, .15);
+    color: #d6f5df
+}
+
+@media (min-width:768px) {
+    .kanban {
+        grid-template-columns: repeat(2, 1fr)
+    }
+}
+
+@media (min-width:1280px) {
+    .kanban {
+        grid-template-columns: repeat(3, 1fr)
+    }
+}

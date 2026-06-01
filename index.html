@@ -1,0 +1,130 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Petrocerva Gastrobar — Peça pelo QR ou Delivery</title>
+    <meta
+      name="description"
+      content="Cardápio digital do Petrocerva Gastrobar."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Hind:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/css/global.css" />
+    <link rel="stylesheet" href="./assets/css/home.css" />
+    <link
+      rel="icon"
+      type="image/jpeg"
+      href="./assets/img/logo-petrocerva.jpg"
+    />
+    <script defer src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="./assets/js/main.js"></script>
+  </head>
+  <body>
+    <div id="header"></div>
+    <main>
+      <section class="hero bg-hero">
+        <div class="hero-bg">
+          <img
+            src="assets/img/hero-beer.jpg"
+            alt="Duas canecas de chope brindando com respingos de espuma"
+          />
+        </div>
+        <div class="container hero-grid">
+          <div class="animate-fade-in">
+            <div class="pill"><i data-lucide="sparkles"></i> Desde 2022</div>
+            <h1>
+              GELADA, <span class="text-gradient-gold">SABOROSA</span><br />E NA
+              HORA.
+            </h1>
+            <p class="lead">
+              Cardápio digital com pedidos diretos para a cozinha. Escolha entre
+              mesa via QR code ou delivery — e acompanhe seu pedido em tempo
+              real.
+            </p>
+            <div class="actions">
+              <a
+                href="pages/cliente/index.html?tipo=mesa"
+                class="btn btn-gold hover-lift"
+                ><i data-lucide="qr-code"></i> Estou na mesa</a
+              ><a
+                href="pages/cliente/index.html?tipo=delivery"
+                class="btn btn-outline hover-lift"
+                ><i data-lucide="bike"></i> Quero delivery</a
+              >
+            </div>
+            <div class="feature-grid">
+              <div class="feature card-surface">
+                <i data-lucide="beer" class="feature-icon"></i>
+                <div class="feature-label">Chopes geladíssimos</div>
+              </div>
+              <div class="feature card-surface">
+                <i data-lucide="utensils" class="feature-icon"></i>
+                <div class="feature-label">Cozinha autoral</div>
+              </div>
+              <div class="feature card-surface">
+                <i data-lucide="clock" class="feature-icon"></i>
+                <div class="feature-label">Pedido em tempo real</div>
+              </div>
+            </div>
+          </div>
+          <div class="hero-logo-wrap">
+            <img
+              src="assets/img/logo-petrocerva.jpg"
+              alt="Logo Petrocerva Gastrobar"
+              class="hero-logo shadow-glow animate-float"
+            />
+          </div>
+        </div>
+      </section>
+      <section class="container section">
+        <h2 class="section-title">
+          Como <span class="text-gradient-gold">funciona</span>
+        </h2>
+        <p class="muted mt-2">
+          Em três passos, sua mesa é atendida ou sua entrega é despachada.
+        </p>
+        <div class="steps-grid">
+          <article class="step-card card-surface hover-lift">
+            <div class="step-n text-gradient-gold">01</div>
+            <h3>Identifique-se</h3>
+            <p class="muted text-sm">
+              Diga se está na mesa ou pedindo delivery e informe seus dados.
+            </p>
+          </article>
+          <article class="step-card card-surface hover-lift">
+            <div class="step-n text-gradient-gold">02</div>
+            <h3>Monte o pedido</h3>
+            <p class="muted text-sm">
+              Navegue pelo cardápio, adicione ao carrinho e finalize.
+            </p>
+          </article>
+          <article class="step-card card-surface hover-lift">
+            <div class="step-n text-gradient-gold">03</div>
+            <h3>Acompanhe</h3>
+            <p class="muted text-sm">
+              A cozinha recebe na hora. Você acompanha pelo código do pedido.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">
+      © <span id="year"></span> Petrocerva Gastrobar — Desde 2022
+    </footer>
+  
+  </body>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("header").innerHTML = App.renderHeader({
+          showInternal: false,
+        });
+        document.getElementById("year").textContent = new Date().getFullYear();
+        App.safeIcons();
+      });
+    </script>
+</html>
