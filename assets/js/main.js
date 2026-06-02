@@ -24,7 +24,11 @@ App.formatBRL = cents => (Number(cents || 0) / 100).toLocaleString('pt-BR', { st
 App.escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
 App.cleanPhone = value => String(value || '').replace(/\D/g, '');
 App.icon = (name, cls = '') => `<i data-lucide="${name}" class="${cls}"></i>`;
-App.safeIcons = () => { if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons(); };
+App.safeIcons = () => {
+  if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+  if (typeof App.initMotion === 'function') App.initMotion(document);
+};
+App.prefersReducedMotion = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 App.get = (k, d = null) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
 App.set = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
@@ -34,6 +38,8 @@ App.toast = msg => {
   if (!t) {
     t = document.createElement('div');
     t.className = 'toast';
+    t.setAttribute('role', 'status');
+    t.setAttribute('aria-live', 'polite');
     document.body.appendChild(t);
   }
   t.textContent = msg;
@@ -78,6 +84,7 @@ App.addCart = (item, qty = 1) => {
   else cart.push({ ...item, qty });
   App.saveCart(cart);
   App.refreshCartBadges();
+  App.pulseCartBadges();
   App.toast(`${item.name} adicionado`);
 };
 
@@ -107,6 +114,102 @@ App.refreshCartBadges = () => {
     const countEl = bar.querySelector('[data-bottom-count]');
     if (countEl) countEl.textContent = App.count();
   }
+};
+
+App.pulseCartBadges = () => {
+  if (App.prefersReducedMotion()) return;
+  document.querySelectorAll('[data-cart-count], [data-bottom-count]').forEach(el => {
+    el.classList.remove('is-bumping');
+    void el.offsetWidth;
+    el.classList.add('is-bumping');
+  });
+};
+
+App.showSuccessPulse = message => {
+  if (App.prefersReducedMotion()) return;
+  const current = document.querySelector('.action-success');
+  if (current) current.remove();
+  const el = document.createElement('div');
+  el.className = 'action-success';
+  el.innerHTML = `${App.icon('circle-check')}<span>${App.escapeHTML(message)}</span>`;
+  document.body.appendChild(el);
+  App.safeIcons();
+  setTimeout(() => el.remove(), 950);
+};
+
+App.animateNumbers = (root = document, opts = {}) => {
+  if (App.prefersReducedMotion()) return;
+  const duration = Number(opts.duration || 850);
+  root.querySelectorAll('[data-count-to]').forEach(el => {
+    const target = Number(el.dataset.countTo || 0);
+    const type = el.dataset.countType || 'number';
+    const start = performance.now();
+    const tick = now => {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = Math.round(target * eased);
+      el.textContent = type === 'currency' ? App.formatBRL(value) : String(value);
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+};
+
+App.applyMotionDelays = (root = document) => {
+  root.querySelectorAll('.motion-stagger, .reveal-stagger, .product-grid, .promo-scroll, .kanban, .admin-kpi-grid').forEach(group => {
+    [...group.children].forEach((el, index) => {
+      if (!el.style.getPropertyValue('--motion-index')) el.style.setProperty('--motion-index', index);
+    });
+  });
+};
+
+App.bindRipples = (root = document) => {
+  root.querySelectorAll('.btn, .add-btn, .chip, .icon-btn').forEach(el => {
+    if (el.dataset.rippleBound) return;
+    el.dataset.rippleBound = 'true';
+    el.classList.add('ripple-host');
+    el.addEventListener('click', event => {
+      if (App.prefersReducedMotion() || el.disabled) return;
+      const rect = el.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.className = 'btn-ripple';
+      ripple.style.left = `${event.clientX - rect.left}px`;
+      ripple.style.top = `${event.clientY - rect.top}px`;
+      el.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    });
+  });
+};
+
+App.initMotion = (root = document) => {
+  App.applyMotionDelays(root);
+  App.bindRipples(root);
+
+  const revealEls = [...root.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale')].filter(el => !el.dataset.revealBound);
+  if (!revealEls.length) return;
+
+  if (App.prefersReducedMotion() || !('IntersectionObserver' in window)) {
+    revealEls.forEach(el => {
+      el.dataset.revealBound = 'true';
+      el.classList.add('is-visible');
+    });
+    return;
+  }
+
+  if (!App.revealObserver) {
+    App.revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        App.revealObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.14, rootMargin: '0px 0px -8% 0px' });
+  }
+
+  revealEls.forEach(el => {
+    el.dataset.revealBound = 'true';
+    App.revealObserver.observe(el);
+  });
 };
 
 App.CATEGORIAS_CARDAPIO = [

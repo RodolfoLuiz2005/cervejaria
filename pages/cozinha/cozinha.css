@@ -8,7 +8,8 @@
     border: 1px solid rgba(74, 83, 96, .65);
     background: rgba(52, 61, 74, .4);
     border-radius: 1rem;
-    padding: .75rem
+    padding: .75rem;
+    transition: border-color .25s ease, background-color .25s ease
 }
 
 .column-head {
@@ -34,7 +35,8 @@
     font-family: 'Archivo Black';
     border-radius: 999px;
     padding: .125rem .5rem;
-    font-size: .75rem
+    font-size: .75rem;
+    transition: transform .22s cubic-bezier(.2,.8,.2,1)
 }
 
 .empty {
@@ -48,7 +50,18 @@
 
 .order-card {
     border-radius: .75rem;
-    padding: .75rem
+    padding: .75rem;
+    transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .25s
+}
+
+.order-card:hover {
+    transform: translate3d(0, -2px, 0);
+    box-shadow: var(--shadow-elegant)
+}
+
+.order-card-new {
+    animation: slide-up-soft .45s cubic-bezier(.2,.8,.2,1) both, highlight-order 1.6s ease-out both;
+    border-color: rgba(242, 183, 73, .45)
 }
 
 .tag {
@@ -59,7 +72,8 @@
     padding: .125rem .5rem;
     font-size: 10px;
     text-transform: uppercase;
-    letter-spacing: .06em
+    letter-spacing: .06em;
+    transition: transform .22s cubic-bezier(.2,.8,.2,1), opacity .22s
 }
 
 .tag-delivery {

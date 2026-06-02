@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (mode === 'painel') {
     if (!ensureBalcaoAccess()) return;
     renderCounterPanel();
-    panelTimer = setInterval(renderCounterPanel, 2000);
+    panelTimer = setInterval(() => renderCounterPanel(false), 2000);
   } else {
     if (!canOpenCheckoutWithoutAuth() && !App.hasRole('balcao')) {
       if (!ensureBalcaoAccess()) return;
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function renderCheckout() {
   const customer = App.customer();
-  document.getElementById('app').innerHTML = `<section class="container page-pad" style="max-width:48rem"><h1 class="font-display text-4xl">Seu pedido</h1>${customer ? `<p class="text-sm muted mt-1">${customer.type === 'mesa' ? `Mesa ${App.escapeHTML(customer.table_number || '')} • ${Number(customer.party_size || 1)} pessoa(s)` : `Delivery • ${App.escapeHTML(customer.street || '')}, ${App.escapeHTML(customer.house_number || '')}`}</p>` : ''}<div class="card-surface rounded-2xl p-6 mt-6" id="checkout-box"></div><p class="text-xs muted mt-4">Precisa operar no balcão? Abra <a href="?modo=painel" style="color:var(--gold)">modo painel</a>.</p></section>`;
+  document.getElementById('app').innerHTML = `<section class="container page-pad motion-slide-up" style="max-width:48rem"><h1 class="font-display text-4xl">Seu pedido</h1>${customer ? `<p class="text-sm muted mt-1">${customer.type === 'mesa' ? `Mesa ${App.escapeHTML(customer.table_number || '')} • ${Number(customer.party_size || 1)} pessoa(s)` : `Delivery • ${App.escapeHTML(customer.street || '')}, ${App.escapeHTML(customer.house_number || '')}`}</p>` : ''}<div class="card-surface rounded-2xl p-6 mt-6 motion-scale-in" id="checkout-box"></div><p class="text-xs muted mt-4">Precisa operar no balcão? Abra <a href="?modo=painel" style="color:var(--gold)">modo painel</a>.</p></section>`;
   drawBox();
 }
 
@@ -52,13 +52,17 @@ function drawBox() {
     return;
   }
 
-  box.innerHTML = `<ul class="cart-list">${items.map(i => `<li class="cart-item"><img src="${typeof i.image_url === 'string' ? i.image_url : '../../assets/img/hero-beer.jpg'}" alt="${App.escapeHTML(i.name)}"><div style="flex:1;min-width:0"><div class="font-display truncate">${App.escapeHTML(i.name)}</div><div class="text-xs muted">${App.formatBRL(i.price_cents)} cada</div></div><div class="qty"><button class="icon-btn" data-dec="${App.escapeHTML(i.id)}">${App.icon('minus')}</button><span class="font-display" style="width:1.5rem;text-align:center">${i.qty}</span><button class="icon-btn" data-inc="${App.escapeHTML(i.id)}">${App.icon('plus')}</button></div><div class="price cart-price" style="width:5.5rem;text-align:right">${App.formatBRL(i.price_cents * i.qty)}</div><button class="icon-btn muted" data-rm="${App.escapeHTML(i.id)}">${App.icon('trash-2')}</button></li>`).join('')}</ul><label class="field mt-4"><span class="label">Observações (opcional)</span><textarea id="notes" class="textarea" rows="2" placeholder="Ex.: sem cebola, ponto da carne, etc."></textarea></label><div class="total-row"><span class="font-display uppercase tracking muted">Total</span><span class="font-display text-2xl text-gradient-gold">${App.formatBRL(App.total())}</span></div><button id="finalize" class="btn btn-gold hover-lift w-full mt-5">Finalizar pedido ${App.icon('arrow-right')}</button>`;
+  box.innerHTML = `<ul class="cart-list motion-stagger">${items.map(i => `<li class="cart-item" data-cart-item="${App.escapeHTML(i.id)}"><img src="${typeof i.image_url === 'string' ? i.image_url : '../../assets/img/hero-beer.jpg'}" alt="${App.escapeHTML(i.name)}"><div style="flex:1;min-width:0"><div class="font-display truncate">${App.escapeHTML(i.name)}</div><div class="text-xs muted">${App.formatBRL(i.price_cents)} cada</div></div><div class="qty"><button class="icon-btn" data-dec="${App.escapeHTML(i.id)}">${App.icon('minus')}</button><span class="font-display" style="width:1.5rem;text-align:center">${i.qty}</span><button class="icon-btn" data-inc="${App.escapeHTML(i.id)}">${App.icon('plus')}</button></div><div class="price cart-price" style="width:5.5rem;text-align:right">${App.formatBRL(i.price_cents * i.qty)}</div><button class="icon-btn muted" data-rm="${App.escapeHTML(i.id)}">${App.icon('trash-2')}</button></li>`).join('')}</ul><label class="field mt-4"><span class="label">Observações (opcional)</span><textarea id="notes" class="textarea" rows="2" placeholder="Ex.: sem cebola, ponto da carne, etc."></textarea></label><div class="total-row"><span class="font-display uppercase tracking muted">Total</span><span class="font-display text-2xl text-gradient-gold">${App.formatBRL(App.total())}</span></div><button id="finalize" class="btn btn-gold hover-lift w-full mt-5">Finalizar pedido ${App.icon('arrow-right')}</button>`;
 
   document.querySelectorAll('[data-dec]').forEach(btn => btn.onclick = () => {
     const item = App.cart().find(i => i.id === btn.dataset.dec);
     if (!item) return;
+    if (item.qty <= 1 && !App.prefersReducedMotion()) {
+      const row = [...document.querySelectorAll('[data-cart-item]')].find(el => el.dataset.cartItem === btn.dataset.dec);
+      if (row) row.classList.add('is-removing');
+    }
     App.updateQty(btn.dataset.dec, item.qty - 1);
-    drawBox();
+    setTimeout(drawBox, item.qty <= 1 && !App.prefersReducedMotion() ? 180 : 0);
   });
 
   document.querySelectorAll('[data-inc]').forEach(btn => btn.onclick = () => {
@@ -69,12 +73,22 @@ function drawBox() {
   });
 
   document.querySelectorAll('[data-rm]').forEach(btn => btn.onclick = () => {
+    const row = [...document.querySelectorAll('[data-cart-item]')].find(el => el.dataset.cartItem === btn.dataset.rm);
+    if (row && !App.prefersReducedMotion()) {
+      row.classList.add('is-removing');
+      setTimeout(() => {
+        App.remove(btn.dataset.rm);
+        drawBox();
+      }, 180);
+      return;
+    }
     App.remove(btn.dataset.rm);
     drawBox();
   });
 
   document.getElementById('finalize').onclick = finalize;
   App.safeIcons();
+  App.initMotion();
 }
 
 function finalize() {
@@ -95,7 +109,10 @@ function finalize() {
     App.addPedido(pedido);
     App.clearCart();
     App.toast(`Pedido ${pedido.codigo} enviado para a cozinha!`);
-    location.href = `../pedido/index.html?id=${encodeURIComponent(pedido.id)}`;
+    App.showSuccessPulse(`Pedido ${pedido.codigo} enviado`);
+    setTimeout(() => {
+      location.href = `../pedido/index.html?id=${encodeURIComponent(pedido.id)}`;
+    }, App.prefersReducedMotion() ? 0 : 650);
   } catch (err) {
     console.error(err);
     App.toast('Erro ao finalizar pedido. Tente novamente.');
@@ -104,11 +121,11 @@ function finalize() {
   }
 }
 
-function renderCounterPanel() {
+function renderCounterPanel(animate = true) {
   const allowed = ['recebido', 'preparando', 'pronto'];
   const pedidos = App.getPedidos().filter(p => allowed.includes(p.status));
 
-  document.getElementById('app').innerHTML = `<section class="container page-pad"><div class="top-row"><div><h1 class="font-display text-4xl">Balcão</h1><p class="text-sm muted">Atualização automática a cada 2s — ${pedidos.length} pedido(s) em andamento.</p></div><a href="./index.html" class="btn btn-outline">Voltar ao carrinho</a></div><div class="kanban mt-6" id="counter-board"></div></section>`;
+  document.getElementById('app').innerHTML = `<section class="container page-pad"><div class="top-row ${animate ? 'motion-slide-up' : ''}><div><h1 class="font-display text-4xl">Balcão</h1><p class="text-sm muted">Atualização automática a cada 2s — ${pedidos.length} pedido(s) em andamento.</p></div><a href="./index.html" class="btn btn-outline">Voltar ao carrinho</a></div><div class="kanban mt-6 ${animate ? 'motion-stagger' : ''}" id="counter-board"></div></section>`;
 
   const board = document.getElementById('counter-board');
   const cols = [
@@ -119,7 +136,7 @@ function renderCounterPanel() {
 
   for (const col of cols) {
     const list = pedidos.filter(p => p.status === col.status);
-    board.insertAdjacentHTML('beforeend', `<div class="column"><div class="column-head"><div class="column-title"><i data-lucide="${col.icon}" style="color:var(--gold)"></i>${col.title}</div><span class="count">${list.length}</span></div><div class="space-y">${list.map(renderCard).join('') || '<div class="empty">Vazio</div>'}</div></div>`);
+    board.insertAdjacentHTML('beforeend', `<div class="column"><div class="column-head"><div class="column-title"><i data-lucide="${col.icon}" style="color:var(--gold)"></i>${col.title}</div><span class="count">${list.length}</span></div><div class="space-y">${list.map(p => renderCard(p, animate)).join('') || '<div class="empty">Vazio</div>'}</div></div>`);
   }
 
   document.querySelectorAll('[data-next]').forEach(btn => btn.onclick = () => {
@@ -132,9 +149,10 @@ function renderCounterPanel() {
   });
 
   App.safeIcons();
+  App.initMotion();
 }
 
-function renderCard(pedido) {
+function renderCard(pedido, animate = true) {
   const nextMap = {
     recebido: ['preparando', 'Iniciar preparo'],
     preparando: ['pronto', 'Marcar pronto'],
@@ -142,6 +160,6 @@ function renderCard(pedido) {
   };
 
   const next = nextMap[pedido.status];
-  return `<article class="order-card card-surface"><div class="flex items-center justify-between"><div class="font-display text-gradient-gold">${App.escapeHTML(pedido.codigo)}</div><span class="text-xs muted">${pedido.tipo === 'delivery' ? 'Delivery' : App.escapeHTML(pedido.mesa || '')}</span></div><div class="mt-1 text-sm muted">${App.escapeHTML(pedido.cliente || 'Cliente')}</div><div class="mt-3 flex items-center justify-between"><span class="price">${App.formatBRL(pedido.total)}</span>${next ? `<button class="add-btn" data-id="${App.escapeHTML(pedido.id)}" data-next="${next[0]}">${next[1]}</button>` : ''}</div></article>`;
+  return `<article class="order-card card-surface"><div class="flex items-center justify-between"><div class="font-display text-gradient-gold">${App.escapeHTML(pedido.codigo)}</div><span class="text-xs muted">${pedido.tipo === 'delivery' ? 'Delivery' : App.escapeHTML(pedido.mesa || '')}</span></div><div class="mt-1 text-sm muted">${App.escapeHTML(pedido.cliente || 'Cliente')}</div><div class="mt-3 flex items-center justify-between"><span class="price">${App.formatBRL(pedido.total)}</span>${next ? `<button class="add-btn" data-id="${App.escapeHTML(pedido.id)}" data-next="${next[0]}">${App.icon('check')}${next[1]}</button>` : ''}</div></article>`;
 }
 

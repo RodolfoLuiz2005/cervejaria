@@ -8,7 +8,8 @@
 }
 
 .status-step {
-    text-align: center
+    text-align: center;
+    transition: opacity .25s ease, transform .25s cubic-bezier(.2,.8,.2,1)
 }
 
 .status-icon {
@@ -22,14 +23,16 @@
     margin: 0 auto;
     border: 1px solid var(--border);
     background: var(--card);
-    color: var(--muted-foreground)
+    color: var(--muted-foreground);
+    transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, background .25s, color .25s
 }
 
 .status-step.active .status-icon {
     border: 0;
     background: var(--gradient-gold);
     color: var(--gold-foreground);
-    box-shadow: var(--shadow-gold)
+    box-shadow: var(--shadow-gold);
+    transform: translate3d(0, -2px, 0) scale(1.03)
 }
 
 .status-label {
@@ -43,6 +46,10 @@
 
 .status-step.active .status-label {
     color: var(--foreground)
+}
+
+.status-steps .active:last-child .status-icon {
+    animation: badge-pop .45s cubic-bezier(.2,.8,.2,1)
 }
 
 .cart-list {
